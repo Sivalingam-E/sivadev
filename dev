@@ -1,0 +1,44 @@
+node {
+    // Define environment variables
+    env.APP_NAME = "MyApp"
+    env.BRANCH_NAME = "main"
+
+    stage('Checkout') {
+        echo "Checking out code from branch: ${env.BRANCH_NAME}"
+        git branch: env.BRANCH_NAME, url: 'https://github.com/your-repo/your-project.git'
+    }
+
+    stage('Install Dependencies') {
+        echo "Installing dependencies..."
+        sh 'npm install'
+    }
+
+    stage('Build') {
+        echo "Building the application..."
+        sh 'npm run build'
+    }
+
+    stage('Test') {
+        echo "Running tests..."
+        sh 'npm test'
+    }
+
+    stage('Archive Artifacts') {
+        echo "Archiving build artifacts..."
+        archiveArtifacts artifacts: 'dist/**/*.*', fingerprint: true
+    }
+
+    stage('Deploy') {
+        if (env.BRANCH_NAME == 'main') {
+            echo "Deploying to production..."
+            sh './deploy-prod.sh'
+        } else {
+            echo "Skipping deploy for non-main branch."
+        }
+    }
+
+    stage('Cleanup') {
+        echo "Cleaning up..."
+        cleanWs()
+    }
+}
